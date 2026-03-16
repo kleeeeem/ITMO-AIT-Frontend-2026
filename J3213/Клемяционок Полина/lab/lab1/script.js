@@ -4,6 +4,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     let activeFilter = 'all';
 
+    window.checkAccess = function(lectureId, buttonElement) {
+        const code = prompt('Введите кодовое слово для доступа к видео:');
+        const accessCodes = {
+            'parallel': 'параллель',
+            'crossroad': 'перекресток',
+        };
+        const videoLinks = {
+            'parallel': 'https://rutube.ru/video/1f72289c07471a38ed98b9f8fd1d08fd/?r=wd',
+            'crossroad': 'https://rutube.ru/video/1f72289c07471a38ed98b9f8fd1d08fd/?r=wd',
+        };
+        if (code && code.toLowerCase() === accessCodes[lectureId]) {
+            alert('Доступ разрешен! Видео скоро откроется');
+            window.open(videoLinks[lectureId], '_blank');
+        } else {
+            alert('Неверное кодовое слово!');
+        }
+    };
+
     function filterCards() {
         const searchText = searchInput ? searchInput.value.toLowerCase().trim() : '';
         lectureCards.forEach(card => {

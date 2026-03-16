@@ -71,6 +71,11 @@
                             <p class="text-secondary mb-0">
                                 ivan@mail.ru
                             </p>
+                            <div class="text-end">
+                                <a href="index.html" class="btn btn-outline-danger px-4">
+                                    Выйти
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -78,7 +83,7 @@
         </div>
     </div> 
 </section>
-<section class="pt-5 py-5" style="margin-top: 60px;">
+<section class="pt-5 py-5">
     <div class="container">
         <div class="row">
             <h2 class="fw-bold mb-3 text-center">
@@ -113,7 +118,7 @@
                                 <div class="progress-bar bg-danger rounded-3" style="width: 75%"></div>
                             </div>
                         </div>
-                        <button class="btn btn-danger w-100 rounded-pill fw-bold text-uppercase py-3 mt-auto">
+                        <button class="btn btn-danger w-100 rounded-pill fw-bold text-uppercase py-3 mt-auto" onclick="checkAccess('parallel', this)">
                             Продолжить просмотр
                         </button>  
                     </div>
@@ -138,9 +143,37 @@
                                 </span>
                             </div>
                         </div>
-                        <button class="btn btn-danger w-100 rounded-pill fw-bold text-uppercase py-3 mt-auto">
+                        <button class="btn btn-danger w-100 rounded-pill fw-bold text-uppercase py-3 mt-auto" onclick="checkAccess('crossroad', this)">
                             начать
                         </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4 lecture-card">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="h3 fw-bold mb-2">
+                            Хотите еще?
+                        </h3>
+                        <p class="text-secondary mb-3">
+                            Больше лекций по вождению:
+                        </p>
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <a href="lection.html" class="btn btn-outline-danger w-100">
+                                    Экстрим-курсы
+                                </a>
+                                <a href="lection.html" class="btn btn-outline-danger w-100">
+                                    Для новичков
+                                </a>
+                                <a href="lection.html" class="btn btn-outline-danger w-100">
+                                    Городской трафик
+                                </a>
+                            </div>
+                        </div>
+                        <a href="lection.html" class="btn btn-danger w-100 rounded-pill fw-bold text-uppercase py-3 mt-auto">
+                            Смотреть все лекции ->
+                        </a>
                     </div>
                 </div>
             </div>
@@ -182,5 +215,6 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
