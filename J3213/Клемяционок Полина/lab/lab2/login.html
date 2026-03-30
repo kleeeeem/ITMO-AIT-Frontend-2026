@@ -77,26 +77,28 @@
                                     </div>
                                 </div>
                             </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">
-                                Email
-                            </label>
-                            <input type="email" class="form-control" placeholder="example@mail.ru">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">
-                                Пароль
-                            </label>
-                            <input type="password" class="form-control" placeholder="********">
-                        </div>
-                        <div class="text-end mb-3">
-                            <a href="#" class="text-danger text-decoration-none small">
-                                Забыли пароль?
-                            </a>
-                        </div>
-                        <button onclick="handleLoginClick()" class="btn btn-danger w-100 py-3 fw-bold text-uppercase mb-3">
-                            Войти
-                        </button>
+                        <form id="loginForm" >
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    Email
+                                </label>
+                                <input type="email" class="form-control" id="email" placeholder="example@mail.ru">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    Пароль
+                                </label>
+                                <input type="password" class="form-control" id="password" placeholder="********">
+                            </div>
+                            <div class="text-end mb-3">
+                                <a href="#" class="text-danger text-decoration-none small">
+                                    Забыли пароль?
+                                </a>
+                            </div>
+                            <button type="submit" class="btn btn-danger w-100 py-3 fw-bold text-uppercase mb-3">
+                                Войти
+                            </button>
+                        </form>
                         <div class="text-center">
                             <span class="text-secondary">
                                 Еще нет аккаунта?
