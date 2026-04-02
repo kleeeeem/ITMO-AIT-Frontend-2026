@@ -1,4 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
+const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+const isLK = window.location.href.includes('pa.html') || window.location.href.includes('pa_inst.html');
+const isLogin = window.location.href.includes('login.html');
+
+if (isLK && !currentUser) {
+    window.location.href = 'login.html';
+    return;
+}
+if (isLogin && currentUser) {
+    window.location.href = currentUser.role === 'instructor' ? 'pa_inst.html' : 'pa.html';
+    return;
+}
     const filterButtons = document.querySelectorAll('.filter-btn');
     const lectureCards = document.querySelectorAll('.lecture-card');
     const searchInput = document.getElementById('searchInput');
@@ -354,6 +366,12 @@ async function markLessonCompleted(lessonId) {
         alert('Ошибка подключения к серверу'); 
     }
 }
+
+function logout() {
+    localStorage.removeItem('currentUser');
+    window.location.href = 'index.html';
+}
+window.logout = logout;
 
 window.bookLesson = bookLesson;
 window.markLessonCompleted = markLessonCompleted;
