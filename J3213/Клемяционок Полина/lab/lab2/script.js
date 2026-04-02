@@ -314,7 +314,7 @@ function renderLessonsList(lessons, containerId) {
             actionButton = '<button class="btn btn-outline-danger btn-sm" disabled>Свободен</button>';
         }
         const studentDisplay = lesson.studentName ? `<span class="text-success fw-bold">${lesson.studentName}</span>` : '<span class="text-secondary">Свободно</span>';
-        const dateDisplay = containerId === 'weekLessons' ? formatDate(lesson.date) : lesson.date;
+        const dateDisplay = containerId === 'todayLessons' ? formatDateShort(lesson.date) : formatDate(lesson.date);
         
         html += `
             <div class="card mb-3 p-3">
@@ -343,6 +343,11 @@ function formatDate(dateString) {
     const date = new Date(dateString);
     const [_, month, day] = dateString.split('-');
     return `${days[date.getDay()]}, ${day}.${month}`;
+}
+
+function formatDateShort(dateString) {
+    const [_, month, day] = dateString.split('-');
+    return `${day}.${month}`;
 }
 
 async function markLessonCompleted(lessonId) {
