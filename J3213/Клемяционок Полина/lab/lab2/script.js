@@ -1,3 +1,112 @@
+function showModal(message, title = 'Сообщение', callback = null) {
+    const modalId = 'dynamicModal_' + Date.now();
+    const modalHtml = `
+        <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">${title}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>${message}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modalEl = document.getElementById(modalId);
+    const modal = new bootstrap.Modal(modalEl);
+    modalEl.addEventListener('hidden.bs.modal', function() {
+        modalEl.remove();
+        if (callback) callback();
+    });
+    modal.show();
+}
+
+function showConfirm(message, onConfirm, onCancel = null) {
+    const modalId = 'confirmModal_' + Date.now();
+    const modalHtml = `
+        <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Подтверждение</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>${message}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-danger" id="confirmOkBtn">Да</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modalEl = document.getElementById(modalId);
+    const modal = new bootstrap.Modal(modalEl);
+    const okBtn = modalEl.querySelector('#confirmOkBtn');
+    const handleConfirm = () => {
+        modalEl.remove();
+        if (onConfirm) onConfirm();
+    };
+    const handleCancel = () => {
+        modalEl.remove();
+        if (onCancel) onCancel();
+    };
+    okBtn.addEventListener('click', handleConfirm);
+    modalEl.addEventListener('hidden.bs.modal', function() {
+        if (modalEl.parentNode) modalEl.remove();
+        if (onCancel) onCancel();
+    });
+    modal.show();
+}
+
+function showPrompt(message, onConfirm, placeholder = '') {
+    const modalId = 'promptModal_' + Date.now();
+    const modalHtml = `
+        <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ввод данных</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>${message}</p>
+                        <input type="text" class="form-control" id="promptInput" placeholder="${placeholder}">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-danger" id="promptOkBtn">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modalEl = document.getElementById(modalId);
+    const modal = new bootstrap.Modal(modalEl);
+    const input = modalEl.querySelector('#promptInput');
+    const okBtn = modalEl.querySelector('#promptOkBtn');
+    const handleOk = () => {
+        const val = input.value;
+        modalEl.remove();
+        if (onConfirm) onConfirm(val);
+    };
+    okBtn.addEventListener('click', handleOk);
+    modalEl.addEventListener('hidden.bs.modal', function() {
+        if (modalEl.parentNode) modalEl.remove();
+        if (onConfirm) onConfirm(null);
+    });
+    modal.show();
+    input.focus();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
 const isLK = window.location.href.includes('pa.html') || window.location.href.includes('pa_inst.html');
@@ -12,12 +121,13 @@ if (isLogin && currentUser) {
     return;
 }
     const filterButtons = document.querySelectorAll('.filter-btn');
-    const lectureCards = document.querySelectorAll('.lecture-card');
+    const lecturesContainer = document.getElementById('lecturesContainer');
     const searchInput = document.getElementById('searchInput');
     let activeFilter = 'all';
 
     window.checkAccess = function(lectureId, buttonElement) {
-        const code = prompt('Введите кодовое слово для доступа к видео:');
+    showPrompt('Введите кодовое слово для доступа к видео:', (code) => {
+        if (!code) return;
         const accessCodes = {
             'parallel': 'параллель',
             'crossroad': 'перекресток',
@@ -26,54 +136,98 @@ if (isLogin && currentUser) {
             'parallel': 'https://rutube.ru/video/1f72289c07471a38ed98b9f8fd1d08fd/?r=wd',
             'crossroad': 'https://rutube.ru/video/1f72289c07471a38ed98b9f8fd1d08fd/?r=wd',
         };
-        if (code && code.toLowerCase() === accessCodes[lectureId]) {
-            alert('Доступ разрешен! Видео скоро откроется');
-            window.open(videoLinks[lectureId], '_blank');
+        if (code.toLowerCase() === accessCodes[lectureId]) {
+            showModal('Доступ разрешен! Видео скоро откроется', 'Успех', () => {
+                window.open(videoLinks[lectureId], '_blank');
+            });
         } else {
-            alert('Неверное кодовое слово!');
+            showModal('Неверное кодовое слово!', 'Ошибка');
+        }
+    });
+};
+
+    async function loadLectures() {
+        if (!lecturesContainer) return;
+        lecturesContainer.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-danger" role="status"></div></div>';
+
+        let baseUrl = `http://localhost:3000/lectures?`;
+        if (activeFilter !== 'all') {
+            baseUrl += `category=${activeFilter}&`;
         }
         
-    };
+        const searchText = searchInput ? searchInput.value.trim() : '';
 
-    function filterCards() {
-        const searchText = searchInput ? searchInput.value.toLowerCase().trim() : '';
-        lectureCards.forEach(card => {
-            const cardCategory = card.getAttribute('data-category');
-            let categoryMatch = (activeFilter === 'all' || cardCategory === activeFilter);
-            
-            let searchMatch = true;
-            if (searchText !== '') {
-                const cardTitle = card.querySelector('h3, .h3, h4, .h4')?.innerText.toLowerCase() || '';
-                const cardDesc = card.querySelector('p')?.innerText.toLowerCase() || '';
-                searchMatch = cardTitle.includes(searchText) || cardDesc.includes(searchText);
-            }
-            
-            if (categoryMatch && searchMatch) {
-                card.style.display = 'block';
+        try {
+            let lectures = [];
+            if (searchText) {
+                const urlTitle = baseUrl + `title_like=${encodeURIComponent(searchText)}`;
+                const urlDesc = baseUrl + `description_like=${encodeURIComponent(searchText)}`;
+                const [resTitle, resDesc] = await Promise.all([fetch(urlTitle), fetch(urlDesc)]);
+                const lecturesTitle = await resTitle.json();
+                const lecturesDesc = await resDesc.json();
+                const map = new Map();
+                [...lecturesTitle, ...lecturesDesc].forEach(l => map.set(l.id, l));
+                lectures = Array.from(map.values());
             } else {
-                card.style.display = 'none';
+                const res = await fetch(baseUrl);
+                lectures = await res.json();
             }
-        });
+            renderLectures(lectures);
+        } catch (e) {
+            console.error('Ошибка:', e);
+            lecturesContainer.innerHTML = '<div class="col-12"><div class="alert alert-danger">Ошибка загрузки лекций. Убедитесь, что запущен json-server</div></div>';
+        }
     }
-    
+
+    function renderLectures(lectures) {
+        if (!lectures.length) {
+            lecturesContainer.innerHTML = '<div class="col-12"><div class="alert alert-info">Лекции не найдены</div></div>';
+            return;
+        }
+        const categoryLabels = { 'newbie': 'новичкам', 'extreme': 'экстрим', 'for_all': 'для всех', 'all': 'для всех' };
+
+        lecturesContainer.innerHTML = lectures.map(l => `
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 hover-lift position-relative">
+                    ${l.isPopular ? '<div class="position-absolute top-0 end-0 m-2"><span class="badge bg-danger">популярно</span></div>' : ''}
+                    <div class="card-body">
+                        <h3 class="card-title h5">${l.title}</h3>
+                        <p class="card-text">${l.description}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <span class="text-muted small">${l.duration}</span>
+                                <span class="badge bg-light text-dark ms-2">${categoryLabels[l.category] || l.category}</span>
+                            </div>
+                            <a href="${l.buyLink}" class="btn btn-outline-danger btn-sm">купить лекцию</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
     filterButtons.forEach(button => {
         button.addEventListener('click', function() {
             filterButtons.forEach(btn => {
                 btn.classList.remove('btn-danger', 'active');
                 btn.classList.add('btn-outline-danger');
             });
-
             this.classList.remove('btn-outline-danger');
             this.classList.add('btn-danger', 'active');
-
             activeFilter = this.getAttribute('data-filter');
-            filterCards();
+            loadLectures();
         });
     });
-    
+
+    // Обработчик поиска
     if (searchInput) {
-        searchInput.addEventListener('input', filterCards);
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchInput.debounceTimer);
+            searchInput.debounceTimer = setTimeout(loadLectures, 300); // Запрос не чаще раза в 300мс
+        });
     }
+
+    // Первичная загрузка
+    if (lecturesContainer) loadLectures();
 
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
@@ -101,7 +255,7 @@ async function handleLoginClick(event) {
     const role = document.querySelector('input[name="role"]:checked')?.value;
     
     if (!email || !password || !role) {
-        alert('Заполните все поля');
+        showModal('Заполните все поля', 'Ошибка');
         return;
     }
     
@@ -112,17 +266,13 @@ async function handleLoginClick(event) {
         
         if (user && user.role === role) {
             localStorage.setItem('currentUser', JSON.stringify(user));
-            if (role === 'student') {
-                window.location.href = 'pa.html';
-            } else if (role === 'instructor') {
-                window.location.href = 'pa_inst.html';
-            }
+            window.location.href = role === 'student' ? 'pa.html' : 'pa_inst.html';
         } else {
-            alert('Неверный email, пароль или роль');
+            showModal('Неверный email, пароль или роль', 'Ошибка'); 
         }
     } catch (e) {
-        console.error('Ошибка:', e);
-        alert('Ошибка подключения к серверу. Запустите json-server командой: json-server --watch db.json --port 3000');
+        console.error(e);
+        showModal('Ошибка подключения к серверу. Запустите json-server', 'Ошибка'); 
     }
 }
 
@@ -138,17 +288,17 @@ async function handleRegister(event) {
     const role = document.querySelector('input[name="role"]:checked')?.value || 'student';
     
     if (!fullName || !email || !password) { 
-        alert('Заполните все обязательные поля'); 
+        showModal('Заполните все обязательные поля', 'Ошибка');
         return; 
     }
     
     if (password !== confirm) { 
-        alert('Пароли не совпадают'); 
+        showModal('Пароли не совпадают', 'Ошибка'); 
         return; 
     }
     
     if (password.length < 3) {
-        alert('Пароль должен содержать минимум 3 символа');
+        showModal('Пароль должен содержать минимум 3 символа', 'Ошибка');
         return;
     }
     
@@ -156,15 +306,10 @@ async function handleRegister(event) {
         const checkRes = await fetch(`http://localhost:3000/users?email=${encodeURIComponent(email)}`);
         const existingUsers = await checkRes.json();     
         if (existingUsers.length > 0) { 
-            alert('Пользователь с таким email уже существует'); 
+            showModal('Пользователь с таким email уже существует', 'Ошибка');
             return; 
         }
-        const newUser = { 
-            name: fullName, 
-            email: email, 
-            password: password, 
-            role: role 
-        };
+        const newUser = { name: fullName, email, password, role };
         
         const createRes = await fetch('http://localhost:3000/users', {
             method: 'POST',
@@ -174,20 +319,28 @@ async function handleRegister(event) {
         
         if (createRes.ok) {
             const createdUser = await createRes.json();
-            alert('Регистрация успешна. Теперь вы можете войти.');
-            window.location.href = 'login.html';
+            showModal('Регистрация успешна. Теперь вы можете войти.', 'Успех', () => {
+                window.location.href = 'login.html';
+            }); 
         } else {
-            const errorData = await createRes.text();
-            console.error('Ошибка регистрации:', errorData);
-            alert('Ошибка регистрации. Попробуйте еще раз.');
+            showModal('Ошибка регистрации. Попробуйте еще раз.', 'Ошибка');
         }
     } catch (e) {
-        console.error('Ошибка:', e);
-        alert('Ошибка подключения к серверу. Убедитесь, что json-server запущен');
+        console.error(e);
+        showModal('Ошибка подключения к серверу. Убедитесь, что json-server запущен', 'Ошибка');
     }
 }
 
 // старница ученика
+function formatLessonDate(dateString) {  
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const days = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    return `${day}.${month} (${days[date.getDay()]})`;
+}
+
 async function initStudentPage() {
     const container = document.getElementById('studentLessons');
     if (!container) return;
@@ -220,11 +373,12 @@ async function initStudentPage() {
                 badge = '<span class="badge bg-danger">Занято</span>';
                 btn = '<button class="btn btn-secondary btn-sm" disabled>Недоступно</button>';
             }
+            const formattedDate = formatLessonDate(lesson.date);
             return `
                 <div class="card mb-3 p-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <strong>${lesson.date} ${lesson.time}</strong>
+                            <strong>${formattedDate} ${lesson.time}</strong>
                             <br><small class="text-muted">Длительность: ${lesson.duration} мин</small>
                         </div>
                         <div class="text-end">
@@ -241,29 +395,25 @@ async function initStudentPage() {
 }
 
 async function bookLesson(lessonId, studentId, studentName) {
-    if (!confirm('Записаться на урок?')) return;
-    
-    try {
-        const res = await fetch(`http://localhost:3000/lessons/${lessonId}`, {
-            method: 'PATCH',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ 
-                status: 'booked', 
-                studentId: studentId, 
-                studentName: studentName 
-            })
-        });
-        
-        if (res.ok) { 
-            alert('Вы успешно записаны на урок!');
-            initStudentPage(); 
-        } else {
-            alert('Ошибка при записи');
+    showConfirm('Записаться на этот урок?', async () => {
+        try {
+            const res = await fetch(`http://localhost:3000/lessons/${lessonId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'booked', studentId, studentName })
+            });
+            if (res.ok) {
+                showModal('Вы успешно записаны на урок!', 'Успех', () => {
+                    initStudentPage();
+                }); // ИЗМЕНЕНО: вместо alert
+            } else {
+                showModal('Ошибка при записи', 'Ошибка'); // ИЗМЕНЕНО
+            }
+        } catch (e) {
+            console.error(e);
+            showModal('Ошибка подключения к серверу', 'Ошибка'); // ИЗМЕНЕНО
         }
-    } catch (e) { 
-        console.error('Ошибка:', e);
-        alert('Ошибка подключения к серверу'); 
-    }
+    });
 }
 
 // страница инстурктора
@@ -285,7 +435,7 @@ async function loadInstructorSchedule() {
         renderLessonsList(todayLessons, 'todayLessons');
         renderLessonsList(weekLessons, 'weekLessons');
     } catch (error) {
-        console.error('Ошибка:', error);
+        console.error(error);
         const el = document.getElementById('todayLessons');
         if (el) el.innerHTML = '<div class="alert alert-danger">Ошибка загрузки. Запустите json-server</div>';
     }
@@ -351,25 +501,25 @@ function formatDateShort(dateString) {
 }
 
 async function markLessonCompleted(lessonId) {
-    if (!confirm('Отметить занятие как проведённое?')) return;
-    
-    try {
-        const res = await fetch(`http://localhost:3000/lessons/${lessonId}`, {
-            method: 'PATCH', 
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ status: 'completed' })
-        });
-        
-        if (res.ok) { 
-            alert('Занятие отмечено как проведённое!'); 
-            loadInstructorSchedule(); 
-        } else {
-            alert('Ошибка обновления');
+    showConfirm('Отметить занятие как проведённое?', async () => {
+        try {
+            const res = await fetch(`http://localhost:3000/lessons/${lessonId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'completed' })
+            });
+            if (res.ok) {
+                showModal('Занятие отмечено как проведённое!', 'Успех', () => {
+                    loadInstructorSchedule();
+                }); 
+            } else {
+                showModal('Ошибка обновления', 'Ошибка'); 
+            }
+        } catch (e) {
+            console.error(e);
+            showModal('Ошибка подключения к серверу', 'Ошибка'); 
         }
-    } catch (e) { 
-        console.error('Ошибка:', e);
-        alert('Ошибка подключения к серверу'); 
-    }
+    });
 }
 
 function logout() {
@@ -382,3 +532,4 @@ window.bookLesson = bookLesson;
 window.markLessonCompleted = markLessonCompleted;
 window.handleLoginClick = handleLoginClick;
 window.handleRegister = handleRegister;
+window.checkAccess = window.checkAccess;
